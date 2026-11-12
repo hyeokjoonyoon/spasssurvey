@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f8fafc">
+  <script>document.documentElement.className += " js";</script>
+  <title>Choose your language | Survey</title>
+
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #172033;
+      --subtext: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-light: #eff6ff;
+      --disabled: #e5e7eb;
+      --disabled-text: #9ca3af;
+      --input-bg: #ffffff;
+      --shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --text: #f1f5f9;
+        --subtext: #94a3b8;
+        --border: #334155;
+        --primary: #60a5fa;
+        --primary-light: #1e3a5f;
+        --disabled: #263244;
+        --disabled-text: #64748b;
+        --input-bg: #1e293b;
+        --shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 32px 16px 48px;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        "Noto Sans",
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .logo {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(26px, 5vw, 36px);
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      margin: 12px 0 5px;
+      color: var(--subtext);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .subtitle-ko {
+      margin: 0;
+      color: var(--subtext);
+      font-size: 14px;
+    }
+
+    .search-wrapper {
+      max-width: 520px;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 19px;
+      pointer-events: none;
+    }
+
+    #searchInput {
+      display: block;
+      width: 100%;
+      height: 54px;
+      padding: 0 16px 0 46px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+      box-shadow: var(--shadow);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #searchInput::placeholder {
+      color: var(--subtext);
+    }
+
+    #searchInput:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+    }
+
+    .language-card[hidden] {
+      display: none !important;
+    }
+
+    /* 스크립트가 없으면 검색 기능은 숨김 (목록은 그대로 표시) */
+    .search-wrapper,
+    .result-count {
+      display: none;
+    }
+
+    .js .search-wrapper {
+      display: block;
+    }
+
+    .js .result-count {
+      display: block;
+    }
+
+    .result-count {
+      margin: 0 0 12px 2px;
+      font-size: 13px;
+      color: var(--subtext);
+    }
+
+    .language-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (min-width: 640px) {
+      .language-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      body {
+        padding-top: 48px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .language-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1280px) {
+      .language-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+    }
+
+    .language-card {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+      min-height: 68px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--card);
+      color: var(--text);
+      text-decoration: none;
+      box-shadow: var(--shadow);
+      transition:
+        transform 0.15s ease,
+        border-color 0.15s ease,
+        background 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .language-card:not(.disabled):hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .language-card:not(.disabled):active {
+      transform: scale(0.98);
+    }
+
+    .language-card:focus-visible {
+      outline: 3px solid var(--primary);
+      outline-offset: 3px;
+    }
+
+    .flag {
+      flex-shrink: 0;
+      width: 36px;
+      text-align: center;
+      font-size: 29px;
+      line-height: 1;
+    }
+
+    .language-info {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .native-name {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .english-name {
+      font-size: 11px;
+      color: var(--subtext);
+      line-height: 1.2;
+    }
+
+    .language-card.disabled {
+      background: var(--disabled);
+      color: var(--disabled-text);
+      border-color: transparent;
+      box-shadow: none;
+      cursor: not-allowed;
+      pointer-events: none;
+      opacity: 0.65;
+    }
+
+    .language-card.disabled .english-name {
+      color: var(--disabled-text);
+    }
+
+    .empty-message {
+      display: none;
+      padding: 40px 16px;
+      text-align: center;
+      color: var(--subtext);
+      font-size: 15px;
+    }
+
+    .empty-message.visible {
+      display: block;
+    }
+
+    footer {
+      margin-top: 32px;
+      text-align: center;
+      color: var(--subtext);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 380px) {
+      .language-card {
+        gap: 7px;
+        padding: 9px 8px;
+      }
+
+      .flag {
+        width: 30px;
+        font-size: 25px;
+      }
+
+      .native-name {
+        font-size: 14px;
+      }
+
+      .english-name {
+        font-size: 10px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+
+    <header>
+      <div class="logo" aria-hidden="true">🌏</div>
+      <h1>Choose your language</h1>
+      <p class="subtitle">Tap your flag to start the survey</p>
+      <p class="subtitle-ko">언어를 선택해 주세요</p>
+    </header>
+
+    <section aria-label="Language selection">
+
+      <div class="search-wrapper">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input
+          type="search"
+          id="searchInput"
+          placeholder="Search your language..."
+          aria-label="Search languages"
+          autocomplete="off"
+        >
+      </div>
+
+      <p class="result-count" id="resultCount" aria-live="polite"></p>
+
+      <div class="language-grid" id="languageGrid">
+        <!-- 링크 수정: 아래 각 카드의 href 값만 변경하세요. -->
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSdOexWgn5_WEJOlzhrI9QN46jMXy8s2OWkmqjLdolnIGXHFzQ/viewform" target="_blank" rel="noopener" aria-label="English survey" data-search="english english" dir="auto">
+          <span class="flag" aria-hidden="true">🇺🇸</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">English</span>
+            <span class="english-name" dir="auto">English</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSdQdclh82CsAMzeB1u9-IfnsFUI5lDWGCFFIeiFLAKfnw0lTg/viewform" target="_blank" rel="noopener" aria-label="Japanese survey" data-search="日本語 japanese" dir="auto">
+          <span class="flag" aria-hidden="true">🇯🇵</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">日本語</span>
+            <span class="english-name" dir="auto">Japanese</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSd6c5UaLfV8wHyPhciU-_UH5EsFzCk6hRFCQbw_RfSUCMeW_Q/viewform" target="_blank" rel="noopener" aria-label="Traditional Chinese survey" data-search="繁體中文 traditional chinese" dir="auto">
+          <span class="flag" aria-hidden="true">🇹🇼</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">繁體中文</span>
+            <span class="english-name" dir="auto">Traditional Chinese</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSe29ATFRRD9SiGLD9HjR9uIzjQi4xPAb4ksH0GaKdOjPOue-A/viewform" target="_blank" rel="noopener" aria-label="Simplified Chinese survey" data-search="简体中文 simplified chinese" dir="auto">
+          <span class="flag" aria-hidden="true">🇨🇳</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">简体中文</span>
+            <span class="english-name" dir="auto">Simplified Chinese</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSfr3AmW3Tgw40JHPVYgdtcTHoYNZC3eKb0a8oqnUDYWtbyCGQ/viewform" target="_blank" rel="noopener" aria-label="Vietnamese survey" data-search="tiếng việt vietnamese" dir="auto">
+          <span class="flag" aria-hidden="true">🇻🇳</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Tiếng Việt</span>
+            <span class="english-name" dir="auto">Vietnamese</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSePzpf7T0tco2LYxQ9So4m7WFOypRs5Gm_YSn6Uevnq2_HCmg/viewform" target="_blank" rel="noopener" aria-label="Filipino survey" data-search="filipino filipino" dir="auto">
+          <span class="flag" aria-hidden="true">🇵🇭</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Filipino</span>
+            <span class="english-name" dir="auto">Filipino</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSeiZpkvmrtv6n3vQgaVyF_WSxTFEhYSVOXEMPDWDVOzrm7hdw/viewform" target="_blank" rel="noopener" aria-label="Thai survey" data-search="ไทย thai" dir="auto">
+          <span class="flag" aria-hidden="true">🇹🇭</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">ไทย</span>
+            <span class="english-name" dir="auto">Thai</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSfjbYroHhM_4PpdvbQS_3AsnKXWVve6K9SN9cPsgOy1XqKclA/viewform" target="_blank" rel="noopener" aria-label="Indonesian survey" data-search="bahasa indonesia indonesian" dir="auto">
+          <span class="flag" aria-hidden="true">🇮🇩</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Bahasa Indonesia</span>
+            <span class="english-name" dir="auto">Indonesian</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSfXbYUiJGF8RgwKP3MUqRvf49tlR9zFRtZRP-cmeGs9UaJpYg/viewform" target="_blank" rel="noopener" aria-label="Malay survey" data-search="bahasa melayu malay" dir="auto">
+          <span class="flag" aria-hidden="true">🇲🇾</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Bahasa Melayu</span>
+            <span class="english-name" dir="auto">Malay</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSdl9QbzWDF3QLBY45aQRLMHB3MtQfIG4igzva33eT2m0vsuoQ/viewform" target="_blank" rel="noopener" aria-label="Tamil survey" data-search="தமிழ் tamil" dir="auto">
+          <span class="flag" aria-hidden="true">🇮🇳</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">தமிழ்</span>
+            <span class="english-name" dir="auto">Tamil</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSd0EYgQVZuUluT1-SO-KNHFLf6VhQefmyklABBF-LvSjvR1jQ/viewform" target="_blank" rel="noopener" aria-label="Cantonese survey" data-search="廣東話 cantonese" dir="auto">
+          <span class="flag" aria-hidden="true">🇭🇰</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">廣東話</span>
+            <span class="english-name" dir="auto">Cantonese</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSeb1Y3BfV38T59B1crekitLJjEPs5dF99oDvBXzae7z-8bcGg/viewform" target="_blank" rel="noopener" aria-label="Russian survey" data-search="русский russian" dir="auto">
+          <span class="flag" aria-hidden="true">🇷🇺</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Русский</span>
+            <span class="english-name" dir="auto">Russian</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSeUAfVdgN7G7jod4XK2flpdGzjzkkBOEnT6uM3X-_NE2L4aUw/viewform" target="_blank" rel="noopener" aria-label="Mongolian survey" data-search="монгол mongolian" dir="auto">
+          <span class="flag" aria-hidden="true">🇲🇳</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Монгол</span>
+            <span class="english-name" dir="auto">Mongolian</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSfiDFmn5D30DhtFHNtavkmnE6kjH4Aq0jtbOHR6HLMV6-Lwdw/viewform" target="_blank" rel="noopener" aria-label="French survey" data-search="français french" dir="auto">
+          <span class="flag" aria-hidden="true">🇫🇷</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Français</span>
+            <span class="english-name" dir="auto">French</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSdduxsfcGtV6TgEWLbJw_cqGs4x7yXPXH0R2CAuA_XttH2U6w/viewform" target="_blank" rel="noopener" aria-label="German survey" data-search="deutsch german" dir="auto">
+          <span class="flag" aria-hidden="true">🇩🇪</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Deutsch</span>
+            <span class="english-name" dir="auto">German</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSfCta3U_cntm2NoZPUTsnVhr_qem8HJfPc76KsJbMyqkTntCQ/viewform" target="_blank" rel="noopener" aria-label="Spanish survey" data-search="español spanish" dir="auto">
+          <span class="flag" aria-hidden="true">🇪🇸</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Español</span>
+            <span class="english-name" dir="auto">Spanish</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSed_sfhJ8o1PAluofuH3-qSLCao5T6GVDrcOtAE4-muy16Akw/viewform" target="_blank" rel="noopener" aria-label="Italian survey" data-search="italiano italian" dir="auto">
+          <span class="flag" aria-hidden="true">🇮🇹</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Italiano</span>
+            <span class="english-name" dir="auto">Italian</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSfzzQpNdbydgDkS72ftai_B444hSWlt5ykz1rlcQAUYtU4QtQ/viewform" target="_blank" rel="noopener" aria-label="Portuguese survey" data-search="português portuguese" dir="auto">
+          <span class="flag" aria-hidden="true">🇵🇹</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Português</span>
+            <span class="english-name" dir="auto">Portuguese</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSfzJyStH-7iY3-oKEZYEShEqrOue5vZGbnIskP6LK3pW9-Qfg/viewform" target="_blank" rel="noopener" aria-label="Arabic survey" data-search="العربية arabic" dir="auto">
+          <span class="flag" aria-hidden="true">🇸🇦</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">العربية</span>
+            <span class="english-name" dir="auto">Arabic</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSc-QHiZr9E3RBwc2o5-qvDsQ3JFj_WfycETlk1ygD_J8v-Fgw/viewform" target="_blank" rel="noopener" aria-label="Hindi survey" data-search="हिन्दी hindi" dir="auto">
+          <span class="flag" aria-hidden="true">🇮🇳</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">हिन्दी</span>
+            <span class="english-name" dir="auto">Hindi</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSeC6oZYU8yzukW7G8iDtgVNa4w1fFd5qsVylT11JKa1ljiUhQ/viewform" target="_blank" rel="noopener" aria-label="Nepali survey" data-search="नेपाली nepali" dir="auto">
+          <span class="flag" aria-hidden="true">🇳🇵</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">नेपाली</span>
+            <span class="english-name" dir="auto">Nepali</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSdNxzW1y3dKYn6ik9mKc09K2WquuAEJsIqdfDiRKEZqW4awuQ/viewform" target="_blank" rel="noopener" aria-label="Uzbek survey" data-search="oʻzbekcha uzbek" dir="auto">
+          <span class="flag" aria-hidden="true">🇺🇿</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Oʻzbekcha</span>
+            <span class="english-name" dir="auto">Uzbek</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSc4Gax8XjH_QR4R4nuGB62XAygTsz5iYji_6H4OKBqWtRaJLA/viewform" target="_blank" rel="noopener" aria-label="Kazakh survey" data-search="қазақша kazakh" dir="auto">
+          <span class="flag" aria-hidden="true">🇰🇿</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Қазақша</span>
+            <span class="english-name" dir="auto">Kazakh</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLScJ0l57tmSSmSReHRSIjkbwZ5c_cytTcDmk8lEtPn95IxfcvA/viewform" target="_blank" rel="noopener" aria-label="Burmese survey" data-search="မြန်မာ burmese" dir="auto">
+          <span class="flag" aria-hidden="true">🇲🇲</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">မြန်မာ</span>
+            <span class="english-name" dir="auto">Burmese</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSe97DSSq4yNuDyuf3cCGeRZN30Kp1Z1_hBbYin8AyzsD5w52w/viewform" target="_blank" rel="noopener" aria-label="Khmer survey" data-search="ខ្មែរ khmer" dir="auto">
+          <span class="flag" aria-hidden="true">🇰🇭</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">ខ្មែរ</span>
+            <span class="english-name" dir="auto">Khmer</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSdC6ESIqgf5iofAYerpGh_D6Qayz5FsiMf7OFLVaLV3-Wgn2A/viewform" target="_blank" rel="noopener" aria-label="Lao survey" data-search="ລາວ lao" dir="auto">
+          <span class="flag" aria-hidden="true">🇱🇦</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">ລາວ</span>
+            <span class="english-name" dir="auto">Lao</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSe2-5oWD2SzhmKEs-DSr7QyjWYOOlxGAfvSUvbe5BoTeoCA_A/viewform" target="_blank" rel="noopener" aria-label="Bengali survey" data-search="বাংলা bengali" dir="auto">
+          <span class="flag" aria-hidden="true">🇧🇩</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">বাংলা</span>
+            <span class="english-name" dir="auto">Bengali</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSftM9f4evSIQrDOu8bnuvUNSnzd62ex874CX_-puoJhOMyOOg/viewform" target="_blank" rel="noopener" aria-label="Turkish survey" data-search="türkçe turkish" dir="auto">
+          <span class="flag" aria-hidden="true">🇹🇷</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Türkçe</span>
+            <span class="english-name" dir="auto">Turkish</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLScQABzPuYIkOHB8pJDXlBF9kJE2jPCEFKo8U-D1ZPRtYl4Rtw/viewform" target="_blank" rel="noopener" aria-label="Polish survey" data-search="polski polish" dir="auto">
+          <span class="flag" aria-hidden="true">🇵🇱</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Polski</span>
+            <span class="english-name" dir="auto">Polish</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/e/1FAIpQLSdgY9E2IYCRhn1VYl3CPz7vNYBXVnC0TXkmSpq4_0IGlVmgdA/viewform" target="_blank" rel="noopener" aria-label="Ukrainian survey" data-search="українська ukrainian" dir="auto">
+          <span class="flag" aria-hidden="true">🇺🇦</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">Українська</span>
+            <span class="english-name" dir="auto">Ukrainian</span>
+          </span>
+        </a>
+        <a class="language-card" href="https://docs.google.com/forms/d/15-BtfwtAJecCP4NjPj_uTL_9crBQN1C3IOBK5TVHlPs/edit" target="_blank" rel="noopener" aria-label="For Store Owners survey" data-search="점주용 설문 for store owners" dir="auto">
+          <span class="flag" aria-hidden="true">🇰🇷</span>
+          <span class="language-info">
+            <span class="native-name" dir="auto">점주용 설문</span>
+            <span class="english-name" dir="auto">For Store Owners</span>
+          </span>
+        </a>
+      </div>
+
+      <div class="empty-message" id="emptyMessage">
+        No languages found.
+        <br>
+        언어를 찾을 수 없습니다.
+      </div>
+
+    </section>
+
+    <footer>
+      Select your preferred language to participate in our survey.
+      <br>
+      Thank you for your participation!
+    </footer>
+
+  </main>
+
+  <script>
+    // 이 스크립트는 "검색" 기능만 담당합니다.
+    // 언어 목록은 HTML에 직접 들어 있어서, 스크립트가 실행되지 않는
+    // 미리보기(카카오톡 등)에서도 목록과 링크가 그대로 보입니다.
+    (function () {
+      const grid = document.getElementById("languageGrid");
+      const cards = Array.from(grid.querySelectorAll(".language-card"));
+      const searchInput = document.getElementById("searchInput");
+      const resultCount = document.getElementById("resultCount");
+      const emptyMessage = document.getElementById("emptyMessage");
+
+      function filterLanguages(filter) {
+        const keyword = (filter || "").trim().toLocaleLowerCase();
+        let shown = 0;
+
+        cards.forEach(function (card) {
+          const match = card.dataset.search.indexOf(keyword) !== -1;
+          card.hidden = !match;
+          if (match) shown++;
+        });
+
+        resultCount.textContent = shown + " / " + cards.length + " languages";
+        emptyMessage.classList.toggle("visible", shown === 0);
+      }
+
+      searchInput.addEventListener("input", function (event) {
+        filterLanguages(event.target.value);
+      });
+
+      filterLanguages("");
+    })();
+  </script>
+</body>
+</html>
